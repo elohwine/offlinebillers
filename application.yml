@@ -35,7 +35,7 @@ offlinebillers.pending.bcc.cron: '0 */5 * * * *'
 offlinebillers:
     partner:
         findbypartnerid:
-            url: http://192.168.92.53:8089/onlinebillers/partner/findby-partner-id/
+            url: http://192.168.84.197:8089/onlinebillers/partner/findby-partner-id/
             token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJVU1NEIiwiaWF0IjoxNjI5MTg0Njk3LCJleHAiOjE2Mjk3ODk0OTd9.5lSKg3xiSN-AePNLGmjt0nPhRaGHTQpiKdr92caTlOjDnaLw_UWTuaLSLsmUcRErrcJQal5p2ckpBBwNEWc-EA
     admin:
         gettokenurl: ${offlinebillers.core.base.url}/api/auth/generatetoken
