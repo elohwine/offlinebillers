@@ -142,11 +142,11 @@ online:
             maximum-pool-size: 200
             minimum-idle: 4
 ##Datasource properties (need to be cachanged to match deployment schema)            
-        password: paymentGatewaydb01#
+        password: C@ss@v@
         jdbcUrl: jdbc:mysql://192.168.84.98:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
         url: jdbc:mysql://192.168.84.98:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
             =false
-        username: paymentGateway
+        username: root
 ##End datasource properties        
     jpa:
         hibernate:
@@ -162,11 +162,11 @@ spring:
             maximum-pool-size: 200
             minimum-idle: 4
 ##Datasource properties (need to be cachanged to match deployment schema)            
-        password: paymentGatewaydb01#
+        password: C@ss@v@
         jdbcUrl: jdbc:mysql://192.168.84.98:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
         url: jdbc:mysql://192.168.84.98:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
             =false
-        username: paymentGateway
+        username: root
 ##End datasource properties        
     jpa:
         hibernate:
