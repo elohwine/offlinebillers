@@ -1,0 +1,215 @@
+caching:
+    specs:
+        menuCache:
+            timeout: 1
+        tokenCache:
+            timeout: 1
+coffee-boots:
+    cache:
+        spec:
+            myCache: maximumSize=100000,expireAfterWrite=15s
+health-status-report:
+    datasource:
+        pagination:
+            pagesize: 15
+http:
+    client:
+        connectTimeout: 3s
+        readTimeout: 18s
+
+
+offlinebillers.pending.bcc.reportsrun: select transaction_date from tmp_transaction_dates left join tmp_report_dates on transaction_date=date_from where date_from is null
+offlinebillers.pending.bcc.reportsprepare: >
+                            drop table if exists tmp_transaction_dates;
+                            drop table if exists tmp_report_dates;
+                            create  table tmp_transaction_dates select distinct DATE_FORMAT(t.transaction_date, '%Y-%m-%d') transaction_date,b.biller_code 
+                            from biller_transaction t 
+                            join account a on t.account_id=a.id
+                            join biller b on b.id=a.biller_id
+                            where b.biller_code='14969' and CAST(t.transaction_date AS DATE)<>CAST(now() AS DATE)
+                            ;
+                            create table tmp_report_dates select name,date_from from report_data where name='BCC_Transactions_Export';
+offlinebillers.pending.bcc.cron: '0 */5 * * * *'
+
+
+offlinebillers:
+    partner:
+        findbypartnerid:
+            url: http://192.168.92.53:8089/onlinebillers/partner/findby-partner-id/
+            token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJVU1NEIiwiaWF0IjoxNjI5MTg0Njk3LCJleHAiOjE2Mjk3ODk0OTd9.5lSKg3xiSN-AePNLGmjt0nPhRaGHTQpiKdr92caTlOjDnaLw_UWTuaLSLsmUcRErrcJQal5p2ckpBBwNEWc-EA
+    admin:
+        gettokenurl: ${offlinebillers.core.base.url}/api/auth/generatetoken
+    application:
+    ##Application ports for the 3 apps
+        api:
+            port: 7771
+        web:
+            port: 8082
+    client:
+        connectTimeout: 3000
+        readTimeout: 5000
+    core:
+        base:
+            url: http://localhost:7771/offlinebillers
+    jwt:
+        jwtexpirationinms: 604800000
+        jwtsecret: iL02pA5PKb6_YoVAKh29h8pRCzo4bEI0erVCT8LgiDeKBjaHFc0EcPDxF1Yb8InUJ0iqpwmILRW7Z3dT7juzUzGqOtoT6NICU3FvUBNUR9ES9JeZ1PJLewcmgeyoFNKR1LsCk3-r3R8MQ7nhQozsF2xgTNTn1xg_vFiy2gLSafmr9RB3WyiNSM7zdTy2EWaGfgqhSlHytYXJoH6Gr6mV7vHOKg0Ov0EV7ePapOUVod3XFMmfOoAICzlkh_C7S1kDvqe8VgVK9h33esjsWT7qCwx70PkfV52CFOV87e8c3RWvbQxkDe7HYj6usKKJChG7APX6nfMNupZmoI0cOTBJ4w
+    ldap:
+        UserDnPattern: uid={0},ou=people
+        basedn: DC=econetzw,DC=local
+        domain: econetzw
+        manager:
+            password: 3cor3c1nt#123
+            user: CN=receiptint,OU=Service Accounts,OU=EconetZimbabwe,DC=econetzw,DC=local
+        searchFilter:
+            login: (sAMAccountName={0})
+            userExists:
+                accountName: (sAMAccountName=%s)
+                objectclass: (&(objectclass=person)%s)
+        url: ldap://192.168.101.47:389
+##Reports configurations   
+    query:
+        reports:
+        - header: id,created_by,created_date,file_name,upload_type,upload_status,file_checksum
+          name: All_Uploads
+          list: SELECT concat(a.id,',',a.created_by,',',a.created_date,',',a.file_name,',',a.upload_type,',',a.upload_status,',',a.file_checksum) FROM upload a join biller b on b.id=a.biller_id where b.biller_code=:billerCode and a.created_date between :startDate and :endDate
+          count: SELECT count(*) FROM upload a join biller b on b.id=a.biller_id where b.biller_code=:billerCode 
+          local: true
+          
+        - header: transaction_date,account_number,currency,amount,ecocash_reference,transaction_status,biller_code,biller name
+          name: Statement
+          list: SELECT concat(transaction_date,',',account_number,',',currency_code,',',amount,',',ecocash_reference,',',transaction_status,',',b.biller_code,',',b.name) FROM biller_transaction a join biller b on a.biller_id=b.id where b.biller_code=:billerCode and a.transaction_status='SUCCESS'  and a.transaction_date between :startDate and :endDate
+          count: select count(*) FROM biller_transaction a join biller b on a.biller_id=b.id where b.biller_code=:billerCode and a.transaction_status='SUCCESS'
+          local: false
+          fileType: CSV
+          
+        - header: id,created_by,created_date,account_number,name,account_status,mobile number
+          name: All_Accoounts
+          list: SELECT concat(a.id,',',a.created_by,',',a.created_date,',',a.account_number,',',a.name,',',a.msisdn,',',a.account_status) FROM account a join biller b on b.id=a.biller_id where b.biller_code=:billerCode  and a.created_date between :startDate and :endDate                    
+          count: SELECT count(*) FROM account a join biller b on b.id=a.biller_id where b.biller_code=:billerCode
+          local: true
+          fileType: CSV
+          
+          
+        - header: id,created_by,created_date,account_number,name,amount,bill_date,due_date,bill_number
+          name: All_Bills
+          list: SELECT concat(a.id,',',a.created_by,',',a.created_date,',',a.account_number,',',a.name,',',bi.amount,',',bi.bill_date,',',bi.due_date,',',bi.bill_number) FROM bill bi join account a on bi.account_id=a.id join biller b on b.id=a.biller_id where b.biller_code=:billerCode  and a.created_date between :startDate and :endDate
+          count: SELECT count(*) FROM bill bi join account a on bi.account_id=a.id join biller b on b.id=a.biller_id where b.biller_code=:billerCode
+          local: true
+          fileType: CSV
+          
+        - header: id,created_by,created_date,account_number,name,amount,bill_date,due_date,bill_number
+          name: BCC_Transactions_Export
+          printName: BCC Report
+          list: >
+              SELECT concat(DATE_FORMAT(transaction_date, '%Y%m%d'),rpad(right('ECOCASH PAYMENTS',20),20,' '),rpad(account_number,15,' '),lpad(amount,12,'0'),'  0             0             0             0             0             0             0             0             0             0                              000000000.00000000000.00000000000.00                    *')  
+              FROM biller_transaction t
+              join account a on a.id=t.account_id
+              join biller b on a.biller_id=b.id
+              where b.biller_code=:billerCode and CAST(t.transaction_date AS DATE) =:startDate
+          count: >
+             select 1
+          local: true
+          billerCode: 14969
+          fileType: _090
+          
+        
+    retry:
+        interval: 5
+offlinebillers.sms.template: "Dear $NAME\nBill $BILLN for accout $ACCN for $AMOUNT on $BILLDATE is due on $DUEDATE\nRegards, $BILLER"
+mobile:
+    number:
+        international:
+            code: 263
+        minimum:
+            length: 9
+        valid-econet:
+            regex: ^(((\+)*2637)|07|7)(7|8)[0-9]{7}$
+        validation:
+            regex: .*
+        
+sms:
+    endpoint:
+        password: $2a$10$H.9TSyFedm061PqYka9l0eJTYP.tjQHbhJ0tLXYpuB22DnNTCbsHP
+        sender: +263164-
+        sms-format: You have successfully redeemed %s points worth $%s in My EcoCashRewards
+            for Airtime
+        url: http://192.168.92.158:8085/csg-service/restapi/notification/send-sms
+        user: cashback
+online:
+    datasource:
+        hikari:
+            maximum-pool-size: 200
+            minimum-idle: 4
+##Datasource properties (need to be cachanged to match deployment schema)            
+        password: paymentGatewaydb01#
+        jdbcUrl: jdbc:mysql://192.168.92.51:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        url: jdbc:mysql://192.168.92.51:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+            =false
+        username: paymentGateway
+##End datasource properties        
+    jpa:
+        hibernate:
+            ddl-auto: none
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.MySQL5Dialect
+                integration.envers.enabled: false
+        show-sql: false
+spring:
+    datasource:
+        hikari:
+            maximum-pool-size: 200
+            minimum-idle: 4
+##Datasource properties (need to be cachanged to match deployment schema)            
+        password: paymentGatewaydb01#
+        jdbcUrl: jdbc:mysql://192.168.92.51:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        url: jdbc:mysql://192.168.92.51:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+            =false
+        username: paymentGateway
+##End datasource properties        
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.MySQL5Dialect
+            org:
+                hibernate:
+                    envers:
+                        audit_table_suffix: _audit_log
+                        default_catalog: offlinebillers
+                        enabled: false
+        show-sql: false
+    servlet:
+        multipart:
+            enabled: true
+            location: /data/files/point-target/
+            max-file-size: 128MB
+            max-request-size: 128MB
+        
+        
+spring.data.mongodb.uri:    mongodb://offlinebiller:Offline185@192.168.92.51:27017/offlinebillers    
+spring.data.mongodb.authentication-database: admin
+##Configurable logging files        
+ussd:
+    logging:
+        file: /data/log/offlinebillers-ecocash-register-ussd.log
+    spring:
+        jta:
+            log-dir: /data/log/offlinebillers-ecocash-register-ussd/
+web:
+    logging:
+        file: /data/log/offlinebillers-ecocash-register-web.log
+    spring:
+        jta:
+            log-dir: /data/log/offlinebillers-ecocash-register-web/
+            
+api:
+    logging:
+        file: /data/log/offlinebillers-ecocash-register-api.log
+    spring:
+        jta:
+            log-dir: /data/log/offlinebillers-ecocash-register-api/           
+            
+
