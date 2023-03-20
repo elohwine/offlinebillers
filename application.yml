@@ -143,8 +143,8 @@ online:
             minimum-idle: 4
 ##Datasource properties (need to be cachanged to match deployment schema)            
         password: paymentGatewaydb01#
-        jdbcUrl: jdbc:mysql://192.168.92.51:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
-        url: jdbc:mysql://192.168.92.51:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        jdbcUrl: jdbc:mysql://192.168.84.98:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        url: jdbc:mysql://192.168.84.98:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
             =false
         username: paymentGateway
 ##End datasource properties        
@@ -163,8 +163,8 @@ spring:
             minimum-idle: 4
 ##Datasource properties (need to be cachanged to match deployment schema)            
         password: paymentGatewaydb01#
-        jdbcUrl: jdbc:mysql://192.168.92.51:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
-        url: jdbc:mysql://192.168.92.51:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        jdbcUrl: jdbc:mysql://192.168.84.98:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        url: jdbc:mysql://192.168.84.98:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
             =false
         username: paymentGateway
 ##End datasource properties        
