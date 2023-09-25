@@ -212,4 +212,7 @@ api:
         jta:
             log-dir: /data/log/offlinebillers-ecocash-register-api/           
             
+logging:
+        level:
+             root: debug
 
