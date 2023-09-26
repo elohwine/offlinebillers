@@ -29,7 +29,7 @@ offlinebillers.pending.bcc.reportsprepare: >
                             where b.biller_code='14969' and CAST(t.transaction_date AS DATE)<>CAST(now() AS DATE)
                             ;
                             create table tmp_report_dates select name,date_from from report_data where name='BCC_Transactions_Export';
-offlinebillers.pending.bcc.cron: '* * * * *	'
+offlinebillers.pending.bcc.cron: '* * * * *'
 
 
 offlinebillers:
