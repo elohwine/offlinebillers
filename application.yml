@@ -188,8 +188,8 @@ spring:
             max-request-size: 128MB
         
         
-spring.data.mongodb.uri:    mongodb://192.168.84.197:27017/offlinebillers
-#spring.data.mongodb.uri:    mongodb://localhost:27017/offlinebillers
+#spring.data.mongodb.uri:    mongodb://192.168.84.197:27017/offlinebillers
+spring.data.mongodb.uri:    mongodb://localhost:27017/offlinebillers
 spring.data.mongodb.authentication-database: admin
 ##Configurable logging files        
 ussd:
