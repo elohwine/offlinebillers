@@ -117,7 +117,7 @@ offlinebillers:
           name: BCC_Transactions_Export
           printName: BCC usd Report
           list: >
-              SELECT concat(DATE_FORMAT(transaction_date, '%Y%m%d'),rpad(right('ECOCASH USD PAYMENTS',20),20,' '),rpad(account_number,15,' '),lpad(amount,12,'0'),'  0             0             0             0             0             0             0             0             0             0                              000000000.00000000000.00000000000.00                    *')  
+              SELECT concat(DATE_FORMAT(transaction_date, '%Y%m%d'),rpad(right('ECOCASH USD PAYMENTS',30),30,' '),rpad(account_number,20,' '),lpad(amount,12,'0'),'  0             0             0             0             0             0             0             0             0             0                              000000000.00000000000.00000000000.00                    *')  
               FROM biller_transaction t
               join account a on a.id=t.account_id
               join biller b on a.biller_id=b.id
