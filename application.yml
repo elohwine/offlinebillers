@@ -35,7 +35,7 @@ offlinebillers.pending.bcc.cron: '0 */5 * * * *'
 offlinebillers:
     partner:
         findbypartnerid:
-            url: http://192.168.92.53:8089/onlinebillers/partner/findby-partner-id/
+            url: http://192.168.84.197:8089/onlinebillers/partner/findby-partner-id/
             token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJVU1NEIiwiaWF0IjoxNjI5MTg0Njk3LCJleHAiOjE2Mjk3ODk0OTd9.5lSKg3xiSN-AePNLGmjt0nPhRaGHTQpiKdr92caTlOjDnaLw_UWTuaLSLsmUcRErrcJQal5p2ckpBBwNEWc-EA
     admin:
         gettokenurl: ${offlinebillers.core.base.url}/api/auth/generatetoken
@@ -100,18 +100,33 @@ offlinebillers:
           
         - header: id,created_by,created_date,account_number,name,amount,bill_date,due_date,bill_number
           name: BCC_Transactions_Export
-          printName: BCC Report
+          printName: BCC zwl Report
           list: >
               SELECT concat(DATE_FORMAT(transaction_date, '%Y%m%d'),rpad(right('ECOCASH PAYMENTS',20),20,' '),rpad(account_number,15,' '),lpad(amount,12,'0'),'  0             0             0             0             0             0             0             0             0             0                              000000000.00000000000.00000000000.00                    *')  
               FROM biller_transaction t
               join account a on a.id=t.account_id
               join biller b on a.biller_id=b.id
-              where b.biller_code=:billerCode and CAST(t.transaction_date AS DATE) =:startDate
+              where b.biller_code=:billerCode and CAST(t.transaction_date AS DATE) =:startDate and t.currency_code=:currencyCode
           count: >
              select 1
           local: true
           billerCode: 14969
           fileType: _090
+
+        - header: id,created_by,created_date,account_number,name,amount,bill_date,due_date,bill_number
+          name: BCC_Transactions_Export
+          printName: BCC usd Report
+          list: >
+              SELECT concat(DATE_FORMAT(transaction_date, '%Y%m%d'),rpad(right('ECOCASH PAYMENTS',20),20,' '),rpad(account_number,15,' '),lpad(amount,12,'0'),'  0             0             0             0             0             0             0             0             0             0                              000000000.00000000000.00000000000.00                    *')  
+              FROM biller_transaction t
+              join account a on a.id=t.account_id
+              join biller b on a.biller_id=b.id
+              where b.biller_code=:billerCode and CAST(t.transaction_date AS DATE) =:startDate and t.currency_code=:currencyCode
+          count: >
+             select 1
+          local: true
+          billerCode: 14969
+          fileType: _095
           
         
     retry:
@@ -142,11 +157,10 @@ online:
             maximum-pool-size: 200
             minimum-idle: 4
 ##Datasource properties (need to be cachanged to match deployment schema)            
-        password: paymentGatewaydb01#
-        jdbcUrl: jdbc:mysql://192.168.92.51:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
-        url: jdbc:mysql://192.168.92.51:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
-            =false
-        username: paymentGateway
+        password: C@ss@v@
+        jdbcUrl: jdbc:mysql://192.168.84.98:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        url: jdbc:mysql://192.168.84.98:33000/online_biller_core?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        username: root
 ##End datasource properties        
     jpa:
         hibernate:
@@ -162,11 +176,11 @@ spring:
             maximum-pool-size: 200
             minimum-idle: 4
 ##Datasource properties (need to be cachanged to match deployment schema)            
-        password: paymentGatewaydb01#
-        jdbcUrl: jdbc:mysql://192.168.92.51:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
-        url: jdbc:mysql://192.168.92.51:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        password: C@ss@v@
+        jdbcUrl: jdbc:mysql://192.168.84.98:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
+        url: jdbc:mysql://192.168.84.98:33000/offlinebillers?autoReconnect=true&zeroDateTimeBehavior=convertToNull&createDatabaseIfNotExist=true&useSSL=false
             =false
-        username: paymentGateway
+        username: root
 ##End datasource properties        
     jpa:
         hibernate:
@@ -190,6 +204,8 @@ spring:
         
         
 spring.data.mongodb.uri:    mongodb://offlinebiller:Offline185@192.168.92.51:27017/offlinebillers    
+#spring.data.mongodb.uri:    mongodb://developer:developer@localhost:27017/?authSource=admin
+#spring.data.mongodb.uri:    mongodb://localhost:27017/offlinebillers
 spring.data.mongodb.authentication-database: admin
 ##Configurable logging files        
 ussd:
@@ -210,6 +226,4 @@ api:
         file: /data/log/offlinebillers-ecocash-register-api.log
     spring:
         jta:
-            log-dir: /data/log/offlinebillers-ecocash-register-api/           
-            
-
+            log-dir: /data/log/offlinebillers-ecocash-register-api/
